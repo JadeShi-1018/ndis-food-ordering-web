@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+  /*  Color Setting */
+  --color-main: #285770;      /* Main color */
+  --color-secondary: #E1F0F2; /* Color 1 */
+  --color-map1: #FF944D;      /* Map 1 */
+  --color-map2: #6FF1F1;      /* Map 2 */
+  
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Roboto', sans-serif; /* design guide */
+}
