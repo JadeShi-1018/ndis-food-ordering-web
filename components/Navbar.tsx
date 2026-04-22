@@ -1,40 +1,29 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
-import Link from "next/link";
-import { User } from '../types/models';
+export default function Navbar() {
+  const router = useRouter()
+  const [email, setEmail] = useState<string | null>(null)
 
-interface NavbarProps {
-  user?: import("../types/models").User;
-  onLogin?: () => void;
-}
+  // Read localStorage only after mount to avoid SSR hydration mismatch
+  useEffect(() => {
+    setEmail(localStorage.getItem('email'))
+  }, [])
 
-export default function Navbar({ 
-    user, 
-    onLogin, 
-}: NavbarProps) {
-    
-   const defaultUser: User = {
-        name: "Mary Chen",
-        avatar: "/avatar.png",
-        hasNewNotification: true,
-        hasNewOrders: false
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    localStorage.removeItem('email')
+    setEmail(null)
+    router.push('/')
+  }
 
-    // If no user is passed from parent, use internal state for testing
-    const [internalIsLoggedIn, setInternalIsLoggedIn] = useState<boolean>(false)
-    
-    // If external user is passed, use external state; otherwise use internal logic
-    const isLoggedIn = user !== undefined ? !!user : internalIsLoggedIn
-    const currentUser = user || (internalIsLoggedIn ? defaultUser : undefined)
-    
-    // Internal toggle function (for testing purposes)
-    const toggleInternalLogin = () => {
-        setInternalIsLoggedIn(!internalIsLoggedIn)
-    }
-
+  const isLoggedIn = !!email
+  const displayName = email ? email.split('@')[0] : ''
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-100">
@@ -52,200 +41,140 @@ export default function Navbar({
             </Link>
           </div>
 
-                    {/* Navigation Links */}
-                    <div className="hidden md:flex items-center space-x-16">
-                        <Link href="/selectService">
-                            <span
-                            className="font-medium text-lg border-b-2 border-transparent pb-1
-                                        hover:border-[var(--color-main)] transition-all duration-200"
-                            style={{ color: 'var(--color-main)' }}
-                            >
-                            尋找服務
-                            </span>
-                        </Link>
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-16">
+            <Link href="/select-service">
+              <span
+                className="font-medium text-lg border-b-2 border-transparent pb-1
+                            hover:border-[var(--color-main)] transition-all duration-200"
+                style={{ color: 'var(--color-main)' }}
+              >
+                Find Services
+              </span>
+            </Link>
 
             {!isLoggedIn && (
               <a
                 href="#"
                 className="font-medium text-lg border-b-2 border-transparent pb-1
-                                          hover:border-[var(--color-main)] transition-all duration-200"
-                style={{ color: "var(--color-main)" }}
+                            hover:border-[var(--color-main)] transition-all duration-200"
+                style={{ color: 'var(--color-main)' }}
               >
-                成為Provider
+                Become a Provider
               </a>
             )}
 
             <a
               href="#"
               className="font-medium text-lg border-b-2 border-transparent pb-1
-                                      hover:border-[var(--color-main)] transition-all duration-200"
-              style={{ color: "var(--color-main)" }}
+                          hover:border-[var(--color-main)] transition-all duration-200"
+              style={{ color: 'var(--color-main)' }}
             >
-              聯絡我們
+              Contact Us
             </a>
           </div>
 
           {/* Right Section */}
-          <div className="lex items-center space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             {!isLoggedIn ? (
               <>
-                {/* Login Button */}
                 <button
-                  onClick={onLogin || toggleInternalLogin}
+                  onClick={() => router.push('/user-login')}
                   className="border-2 rounded-full font-medium text-xl h-[50px] px-6
-                                                hover:text-white transition-all duration-200"
-                  style={{
-                    color: "var(--color-main)",
-                    borderColor: "var(--color-main)",
-                  }}
+                              hover:text-white transition-all duration-200"
+                  style={{ color: 'var(--color-main)', borderColor: 'var(--color-main)' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--color-main)";
-                    e.currentTarget.style.color = "white";
+                    e.currentTarget.style.backgroundColor = 'var(--color-main)'
+                    e.currentTarget.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "var(--color-main)";
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = 'var(--color-main)'
                   }}
                 >
-                  登入
+                  Login
                 </button>
 
-                {/* Register Button */}
                 <button
-                  onClick={onLogin || toggleInternalLogin}
+                  onClick={() => router.push('/user-signup')}
                   className="border-2 rounded-full font-medium text-xl h-[50px] px-6
-                                                hover:text-white transition-all duration-200"
-                  style={{
-                    color: "var(--color-main)",
-                    borderColor: "var(--color-main)",
-                  }}
+                              hover:text-white transition-all duration-200"
+                  style={{ color: 'var(--color-main)', borderColor: 'var(--color-main)' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--color-main)";
-                    e.currentTarget.style.color = "white";
+                    e.currentTarget.style.backgroundColor = 'var(--color-main)'
+                    e.currentTarget.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "var(--color-main)";
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = 'var(--color-main)'
                   }}
                 >
-                  註冊
+                  Register
                 </button>
               </>
             ) : (
               <div className="flex items-center space-x-4">
                 {/* Notification Bell */}
-                <div className="relative">
-                  <button
-                    className="p-2 transition-colors duration-200 hover:opacity-80"
-                    style={{ color: "var(--color-main)" }}
-                  >
-                    <svg
-                      className="w-7 h-7"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      />
-                    </svg>
-                  </button>
-
-                  {/* Notification Badge - Red dot indicator */}
-                  {currentUser?.hasNewNotification && (
-                    <span
-                      className="absolute rounded-full border-2 border-white"
-                      style={{
-                        backgroundColor: "#ef4444",
-                        top: "6px",
-                        right: "6px",
-                        width: "14px",
-                        height: "14px",
-                      }}
-                    ></span>
-                  )}
-                </div>
+                <button
+                  className="p-2 transition-colors duration-200 hover:opacity-80"
+                  style={{ color: 'var(--color-main)' }}
+                >
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </button>
 
                 {/* Order Icon */}
-                <div className="relative">
-                  <button
-                    className="p-2 transition-colors duration-200 hover:opacity-80"
-                    style={{ color: "var(--color-main)" }}
-                  >
-                    <svg
-                      className="w-7 h-7"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <rect
-                        x="5"
-                        y="4"
-                        width="14"
-                        height="17"
-                        rx="2"
-                        ry="2"
-                        strokeWidth={2}
-                      />
-                      <line x1="8" y1="9" x2="16" y2="9" strokeWidth={2} />
-                      <line x1="8" y1="13" x2="16" y2="13" strokeWidth={2} />
-                      <line x1="8" y1="17" x2="14" y2="17" strokeWidth={2} />
-                    </svg>
-                  </button>
+                <button
+                  className="p-2 transition-colors duration-200 hover:opacity-80"
+                  style={{ color: 'var(--color-main)' }}
+                >
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="5" y="4" width="14" height="17" rx="2" ry="2" strokeWidth={2} />
+                    <line x1="8" y1="9" x2="16" y2="9" strokeWidth={2} />
+                    <line x1="8" y1="13" x2="16" y2="13" strokeWidth={2} />
+                    <line x1="8" y1="17" x2="14" y2="17" strokeWidth={2} />
+                  </svg>
+                </button>
 
-                  {/* Order Badge - Red dot indicator */}
-                  {currentUser?.hasNewOrders && (
-                    <span
-                      className="absolute rounded-full border-2 border-white"
-                      style={{
-                        backgroundColor: "#ef4444",
-                        top: "6px",
-                        right: "6px",
-                        width: "14px",
-                        height: "14px",
-                      }}
-                    ></span>
-                  )}
-                </div>
-
-                {/* User Info */}
+                {/* User avatar + name */}
                 <div className="flex items-center space-x-2 flex-shrink-0">
-                  {/* User Avatar */}
                   <div
-                    className="rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "var(--color-map1)" }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--color-main)' }}
                   >
-                    {currentUser?.avatar ? (
-                      <Image
-                        src={currentUser?.avatar}
-                        alt={currentUser?.name}
-                        width={48}
-                        height={48}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      <span className="text-sm font-medium text-white">
-                        {currentUser?.name.charAt(0)}
-                      </span>
-                    )}
+                    <span className="text-sm font-medium text-white">
+                      {displayName.charAt(0).toUpperCase()}
+                    </span>
                   </div>
-
-                  {/* User Name */}
-                  <span
-                    className="font-medium text-sm"
-                    style={{ color: "var(--color-main)" }}
-                  >
-                    {currentUser?.name}
+                  <span className="font-medium text-sm" style={{ color: 'var(--color-main)' }}>
+                    {displayName}
                   </span>
                 </div>
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="border-2 rounded-full font-medium text-sm h-[40px] px-4
+                              transition-all duration-200"
+                  style={{ color: 'var(--color-main)', borderColor: 'var(--color-main)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-main)'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = 'var(--color-main)'
+                  }}
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>
         </div>
       </div>
     </nav>
-  );
+  )
 }

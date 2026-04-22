@@ -1,14 +1,12 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const axiosInstance = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const axiosServiceInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_SERVICE_API_URL,
+  headers: { 'Content-Type': 'application/json' },
 });
 
-axiosInstance.interceptors.response.use(
+axiosServiceInstance.interceptors.response.use(
   (response) => {
     const body = response.data;
     if (!body.succeed) {
@@ -26,4 +24,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export default axiosServiceInstance;

@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 
 interface MapComponentProps {
@@ -22,6 +23,7 @@ function useGoogleMaps() {
 
     // Get API key from environment
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API;
+    console.log("API KET IS", process.env.NEXT_PUBLIC_GOOGLE_MAPS_API);
     if (!apiKey) {
       setError("Google Maps API key not found in environment variables");
       return;
@@ -87,24 +89,34 @@ export default function MapComponent({
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
+      gestureHandling: "greedy",
     });
   }, [isLoaded]);
 
   // Update map when location changes
   useEffect(() => {
-    if (
-      !isLoaded ||
-      !mapInstance.current ||
-      !location ||
-      typeof window === "undefined" ||
-      !window.google?.maps
-    )
-      return;
+  if (
+    !isLoaded ||
+    !mapInstance.current ||
+    !location ||
+    typeof window === "undefined" ||
+    !window.google?.maps
+  )
+    return;
 
-    console.log("Updating map with new location:", location);
+  if (markerInstance.current) {
+    markerInstance.current.setMap(null);
+  }
 
-    
-  }, [isLoaded, location]);
+  mapInstance.current.setCenter(location);
+  mapInstance.current.setZoom(15);
+
+  markerInstance.current = new google.maps.Marker({
+    position: location,
+    map: mapInstance.current,
+    title: "Provider Location",
+  });
+}, [isLoaded, location]);
 
   // Search for location when searchQuery changes
   useEffect(() => {

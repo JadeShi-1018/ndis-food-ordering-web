@@ -1,8 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Navbar from './components/Navbar';
-import GlobalFooter from './components/GlobalFooter';
 
 export default function NotFound() {
   const router = useRouter();

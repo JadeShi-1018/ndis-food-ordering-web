@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 type ServiceCardProps = {
   title: string;
@@ -17,6 +18,8 @@ export default function ServiceCard({
   icon,
   available,
 }: ServiceCardProps) {
+  const router = useRouter();
+
   return (
     <div
       className="relative w-full h-full rounded-3xl overflow-hidden shadow-md bg-cover bg-center"
@@ -33,6 +36,7 @@ export default function ServiceCard({
         <h3 className="text-2xl font-bold tracking-widest mb-4 text-center">{title}</h3>
         <button
           disabled={!available}
+          onClick={() => available && router.push('/delivery-service')}
           className={`
             mb-4 px-10 py-1.5 rounded-full border
             text-sm font-medium transition
@@ -41,7 +45,7 @@ export default function ServiceCard({
               : 'text-black border-black bg-gray-200 cursor-not-allowed'}
           `}
         >
-          選　擇
+          Select
         </button>
         <p className="text-sm text-center leading-relaxed">
           {description || 'Coming soon...'}
