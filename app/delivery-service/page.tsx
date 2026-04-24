@@ -19,8 +19,8 @@ export default function DeliveryServicePage() {
   const [providers, setProviders] = useState<ProviderServiceDto[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<ProviderServiceDto>();
   const [selectedDetail, setSelectedDetail] = useState<ProviderServiceDetailDto>();
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>();
-  const [searchLocation, setSearchLocation] = useState("");
+  const [userLocation] = useState<{ lat: number; lng: number }>();
+  const [searchLocation] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -19,6 +19,14 @@ declare global {
   }
 }
 
+type ProviderWithCoordinates = ProviderServiceDto & {
+  latitude?: number | string;
+  longitude?: number | string;
+  lat?: number | string;
+  lng?: number | string;
+  long?: number | string;
+};
+
 function useGoogleMaps() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
@@ -140,25 +148,26 @@ export default function MapComponent({
     const bounds = new window.google.maps.LatLngBounds();
 
     console.log("providers =", providers);
-    providers.forEach((provider) => {
-      const lat = Number((provider as any).latitude ?? (provider as any).lat);
-      const lng = Number((provider as any).longitude ?? (provider as any).long);
+   providers.forEach((provider) => {
+  const p = provider as ProviderWithCoordinates;
+  const lat = Number(p.latitude ?? p.lat);
+  const lng = Number(p.longitude ?? p.lng ?? p.long);
 
-      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-      const marker = new window.google.maps.Marker({
-        position: { lat, lng },
-        map: mapInstance.current!,
-        title: provider.providerServiceName,
-      });
+  const marker = new window.google.maps.Marker({
+    position: { lat, lng },
+    map: mapInstance.current!,
+    title: provider.providerServiceName,
+  });
 
-      marker.addListener("click", () => {
-        onProviderSelect?.(provider);
-      });
+  marker.addListener("click", () => {
+    onProviderSelect?.(provider);
+  });
 
-      providerMarkersRef.current.set(provider.providerServiceId, marker);
-      bounds.extend({ lat, lng });
-    });
+  providerMarkersRef.current.set(provider.providerServiceId, marker);
+  bounds.extend({ lat, lng });
+});
 
     if (!bounds.isEmpty() && !selectedProvider) {
       mapInstance.current.fitBounds(bounds);
@@ -169,17 +178,15 @@ export default function MapComponent({
   useEffect(() => {
     if (!isLoaded || !mapInstance.current || !selectedProvider) return;
 
-    const lat = Number(
-      (selectedProvider as any).latitude ?? (selectedProvider as any).lat
-    );
-    const lng = Number(
-      (selectedProvider as any).longitude ?? (selectedProvider as any).lng
-    );
+const p = selectedProvider as ProviderWithCoordinates;
+const lat = Number(p.latitude ?? p.lat);
+const lng = Number(p.longitude ?? p.lng ?? p.long);
 
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-    mapInstance.current.panTo({ lat, lng });
-    mapInstance.current.setZoom(15);
+mapInstance.current.panTo({ lat, lng });
+mapInstance.current.setZoom(15);
+
   }, [isLoaded, selectedProvider]);
 
   // current user location
