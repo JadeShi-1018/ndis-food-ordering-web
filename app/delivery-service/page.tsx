@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
-import SearchBar from "../components/SearchBar";
 import MapComponent from "../components/MapComponent";
 import ProviderInfo from "../components/ProviderInfo";
 import {
@@ -42,30 +41,8 @@ export default function DeliveryServicePage() {
     getProviderServiceById(provider.providerServiceId).then(setSelectedDetail);
   };
 
-  const handleLocationSelect = (location: string) => {
-    setSearchLocation(location);
-  };
 
-  const handleCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Your browser does not support geolocation");
-      return;
-    }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        setSearchLocation("");
-      },
-      () =>
-        alert(
-          "Unable to get current location, please check location permission settings"
-        )
-    );
-  };
 console.log("PAGE providers =", providers)
   return (
     
