@@ -4,11 +4,12 @@ import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 
 
-
-
 import GlobalFooter from "@/components/GlobalFooter";
 import Navbar from "@/components/Navbar";
 import { ToastContainer } from "react-toastify";
+
+
+
 
 
 const geistSans = Geist({
