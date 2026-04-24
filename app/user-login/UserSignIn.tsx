@@ -2,13 +2,13 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from '@/apis/auth'
-
+import { useAuth } from '../context/AuthContext'
 const UserSignInPage = () => {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-
+  const { setAuth } = useAuth();
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
@@ -17,6 +17,7 @@ const UserSignInPage = () => {
       localStorage.setItem('token', data.token)
       localStorage.setItem('userId', data.userId)
       localStorage.setItem('email', data.email)
+      setAuth(data.token, data.email);
       router.push('/select-service')
     } finally {
       setLoading(false)

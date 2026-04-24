@@ -1,44 +1,79 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
+import { ProviderServiceDto } from "../../types/providerService";
 
 interface MapComponentProps {
-  location?: { lat: number; lng: number };
+  providers: ProviderServiceDto[];
+  selectedProvider?: ProviderServiceDto;
+  userLocation?: { lat: number; lng: number };
   searchQuery?: string;
-  onLocationSelect?: (location: string) => void;
+  onProviderSelect?: (provider: ProviderServiceDto) => void;
   mapHeight?: string;
   mapWrapperClassName?: string;
 }
 
-// Hook to dynamically load Google Maps
+declare global {
+  interface Window {
+    initGoogleMaps?: () => void;
+  }
+}
+
 function useGoogleMaps() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Check if Google Maps is already loaded
-    if (typeof window !== "undefined" && window.google?.maps) {
+    if (typeof window === "undefined") return;
+
+   
+    if (typeof window.google?.maps?.Map === "function") {
       setIsLoaded(true);
       return;
     }
 
-    // Get API key from environment
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API;
-    console.log("API KET IS", process.env.NEXT_PUBLIC_GOOGLE_MAPS_API);
     if (!apiKey) {
       setError("Google Maps API key not found in environment variables");
       return;
     }
 
-    // Create and load script
+    const existingScript = document.getElementById(
+      "google-maps-script"
+    ) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      const checkReady = window.setInterval(() => {
+        if (typeof window.google?.maps?.Map === "function") {
+          window.clearInterval(checkReady);
+          setIsLoaded(true);
+        }
+      }, 100);
+
+      
+      window.setTimeout(() => {
+        window.clearInterval(checkReady);
+        if (typeof window.google?.maps?.Map !== "function") {
+          setError("Google Maps API failed to initialize");
+        }
+      }, 10000);
+
+      return;
+    }
+
+    window.initGoogleMaps = () => {
+      if (typeof window.google?.maps?.Map === "function") {
+        setIsLoaded(true);
+      } else {
+        setError("Google Maps API loaded but Map constructor is unavailable");
+      }
+    };
+
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.id = "google-maps-script";
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initGoogleMaps`;
     script.async = true;
     script.defer = true;
-
-    script.onload = () => {
-      console.log("Google Maps API loaded successfully");
-      setIsLoaded(true);
-    };
 
     script.onerror = () => {
       setError("Failed to load Google Maps API");
@@ -46,11 +81,9 @@ function useGoogleMaps() {
 
     document.head.appendChild(script);
 
-    // Cleanup
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
+     
+      delete window.initGoogleMaps;
     };
   }, []);
 
@@ -58,34 +91,38 @@ function useGoogleMaps() {
 }
 
 export default function MapComponent({
-  location,
+  providers=[],
+  selectedProvider,
+  userLocation,
   searchQuery,
+  onProviderSelect,
   mapWrapperClassName = "",
   mapHeight = "h-96",
 }: MapComponentProps) {
+  console.log("MAP providers =", providers);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
-  const markerInstance = useRef<google.maps.Marker | null>(null);
+  const providerMarkersRef = useRef<Map<string, google.maps.Marker>>(new Map());
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
 
-  // Use the hook to load Google Maps
   const { isLoaded, error } = useGoogleMaps();
 
-  // Initialize map when Google Maps is loaded
+  // init map
   useEffect(() => {
     if (
       !isLoaded ||
       !mapRef.current ||
       typeof window === "undefined" ||
-      !window.google?.maps
-    )
+      typeof window.google?.maps?.Map !== "function"
+    ) {
       return;
+    }
 
-    console.log("Initializing Google Map");
+    if (mapInstance.current) return;
 
-    // Create map with default center (Brisbane, Australia)
-    mapInstance.current = new google.maps.Map(mapRef.current, {
-      center: { lat: -27.4698, lng: 153.0251 }, // Brisbane, Australia
-      zoom: 13,
+    mapInstance.current = new window.google.maps.Map(mapRef.current, {
+      center: { lat: -37.8136, lng: 144.9631 },
+      zoom: 11,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
@@ -93,46 +130,94 @@ export default function MapComponent({
     });
   }, [isLoaded]);
 
-  // Update map when location changes
+  // render all provider markers
   useEffect(() => {
-  if (
-    !isLoaded ||
-    !mapInstance.current ||
-    !location ||
-    typeof window === "undefined" ||
-    !window.google?.maps
-  )
-    return;
+    if (!isLoaded || !mapInstance.current || !window.google?.maps) return;
 
-  if (markerInstance.current) {
-    markerInstance.current.setMap(null);
-  }
+    providerMarkersRef.current.forEach((marker) => marker.setMap(null));
+    providerMarkersRef.current.clear();
 
-  mapInstance.current.setCenter(location);
-  mapInstance.current.setZoom(15);
+    const bounds = new window.google.maps.LatLngBounds();
 
-  markerInstance.current = new google.maps.Marker({
-    position: location,
-    map: mapInstance.current,
-    title: "Provider Location",
-  });
-}, [isLoaded, location]);
+    console.log("providers =", providers);
+    providers.forEach((provider) => {
+      const lat = Number((provider as any).latitude ?? (provider as any).lat);
+      const lng = Number((provider as any).longitude ?? (provider as any).long);
 
-  // Search for location when searchQuery changes
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+      const marker = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: mapInstance.current!,
+        title: provider.providerServiceName,
+      });
+
+      marker.addListener("click", () => {
+        onProviderSelect?.(provider);
+      });
+
+      providerMarkersRef.current.set(provider.providerServiceId, marker);
+      bounds.extend({ lat, lng });
+    });
+
+    if (!bounds.isEmpty() && !selectedProvider) {
+      mapInstance.current.fitBounds(bounds);
+    }
+  }, [isLoaded, providers, onProviderSelect, selectedProvider]);
+
+  // focus selected provider
+  useEffect(() => {
+    if (!isLoaded || !mapInstance.current || !selectedProvider) return;
+
+    const lat = Number(
+      (selectedProvider as any).latitude ?? (selectedProvider as any).lat
+    );
+    const lng = Number(
+      (selectedProvider as any).longitude ?? (selectedProvider as any).lng
+    );
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+    mapInstance.current.panTo({ lat, lng });
+    mapInstance.current.setZoom(15);
+  }, [isLoaded, selectedProvider]);
+
+  // current user location
+  useEffect(() => {
+    if (!isLoaded || !mapInstance.current || !userLocation) return;
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
+    }
+
+    userMarkerRef.current = new window.google.maps.Marker({
+      position: userLocation,
+      map: mapInstance.current,
+      title: "Your Location",
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: "#2563eb",
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 2,
+      },
+    });
+  }, [isLoaded, userLocation]);
+
+  // search location
   useEffect(() => {
     if (
       !isLoaded ||
       !mapInstance.current ||
       !searchQuery ||
       !searchQuery.trim() ||
-      typeof window === "undefined" ||
       !window.google?.maps
-    )
+    ) {
       return;
+    }
 
-    console.log("Searching for location:", searchQuery);
-
-    const geocoder = new google.maps.Geocoder();
+    const geocoder = new window.google.maps.Geocoder();
 
     geocoder.geocode({ address: searchQuery }, (results, status) => {
       if (status === "OK" && results?.[0]) {
@@ -141,32 +226,14 @@ export default function MapComponent({
           lng: results[0].geometry.location.lng(),
         };
 
-        console.log("Found location:", newLocation);
-
-        // Remove existing marker
-        if (markerInstance.current) {
-          markerInstance.current.setMap(null);
-        }
-
-        // Update map center and zoom
-        if (mapInstance.current) {
-          mapInstance.current.setCenter(newLocation);
-          mapInstance.current.setZoom(15);
-
-          // Add new marker
-          markerInstance.current = new google.maps.Marker({
-            position: newLocation,
-            map: mapInstance.current,
-            title: searchQuery,
-          });
-        }
+        mapInstance.current?.panTo(newLocation);
+        mapInstance.current?.setZoom(14);
       } else {
         console.error("Geocoding failed:", status);
       }
     });
   }, [isLoaded, searchQuery]);
 
-  // Show error if Google Maps failed to load
   if (error) {
     return (
       <div className={`w-full ${mapWrapperClassName}`}>
@@ -175,9 +242,7 @@ export default function MapComponent({
         >
           <div className="text-center p-6">
             <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h3 className="text-red-800 font-semibold mb-2">
-              Map Loading Error
-            </h3>
+            <h3 className="text-red-800 font-semibold mb-2">Map Loading Error</h3>
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         </div>
@@ -185,7 +250,6 @@ export default function MapComponent({
     );
   }
 
-  // Show loading while Google Maps is loading
   if (!isLoaded) {
     return (
       <div className={`w-full ${mapWrapperClassName}`}>
@@ -193,7 +257,7 @@ export default function MapComponent({
           className={`${mapHeight} bg-gray-100 rounded-3xl flex items-center justify-center`}
         >
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Loading Google Maps...</p>
           </div>
         </div>
@@ -201,12 +265,9 @@ export default function MapComponent({
     );
   }
 
-  // Render the map
   return (
     <div className={`w-full ${mapWrapperClassName}`}>
-      <div
-        className={`${mapHeight} bg-gray-200 rounded-3xl overflow-hidden shadow-lg`}
-      >
+      <div className={`${mapHeight} bg-gray-200 rounded-3xl overflow-hidden shadow-lg`}>
         <div ref={mapRef} className="w-full h-full" />
       </div>
     </div>
