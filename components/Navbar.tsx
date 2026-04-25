@@ -46,16 +46,6 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {!isLoggedIn && (
-              <a
-                href="#"
-                className="font-medium text-lg border-b-2 border-transparent pb-1 hover:border-[var(--color-main)] transition-all duration-200"
-                style={{ color: "var(--color-main)" }}
-              >
-                Become a Provider
-              </a>
-            )}
-
             {isLoggedIn && (
               <Link href="/my-orders">
                 <span
@@ -73,7 +63,7 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => router.push("/user-login")}
-                  className="border-2 rounded-full font-medium text-xl h-[50px] px-6 hover:text-white transition-all duration-200"
+                  className="border-2 rounded-full font-medium text-xl h-[50px] px-6 transition-all duration-200"
                   style={{
                     color: "var(--color-main)",
                     borderColor: "var(--color-main)",
@@ -92,7 +82,7 @@ export default function Navbar() {
 
                 <button
                   onClick={() => router.push("/user-signup")}
-                  className="border-2 rounded-full font-medium text-xl h-[50px] px-6 hover:text-white transition-all duration-200"
+                  className="border-2 rounded-full font-medium text-xl h-[50px] px-6 transition-all duration-200"
                   style={{
                     color: "var(--color-main)",
                     borderColor: "var(--color-main)",
@@ -129,25 +119,6 @@ export default function Navbar() {
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                     />
                   </svg>
-                </button>
-
-                <button
-                  onClick={() => router.push("/my-orders")}
-                  className="border-2 rounded-full font-medium text-sm h-[40px] px-4 transition-all duration-200"
-                  style={{
-                    color: "var(--color-main)",
-                    borderColor: "var(--color-main)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--color-main)";
-                    e.currentTarget.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "var(--color-main)";
-                  }}
-                >
-                  My Orders
                 </button>
 
                 <div className="flex items-center space-x-2 flex-shrink-0">
