@@ -39,7 +39,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-16">
             <Link href="/select-service">
               <span
-                className="font-medium text-lg border-b-2 border-transparent pb-1 hover:border-[var(--color-main)] transition-all duration-200"
+                className="font-medium text-lg border-b-2 border-transparent pb-1 hover:border-[var(--color-main)] transition-all duration-200 cursor-pointer"
                 style={{ color: "var(--color-main)" }}
               >
                 Find Services
@@ -56,13 +56,16 @@ export default function Navbar() {
               </a>
             )}
 
-            <a
-              href="#"
-              className="font-medium text-lg border-b-2 border-transparent pb-1 hover:border-[var(--color-main)] transition-all duration-200"
-              style={{ color: "var(--color-main)" }}
-            >
-              Contact Us
-            </a>
+            {isLoggedIn && (
+              <Link href="/my-orders">
+                <span
+                  className="font-medium text-lg border-b-2 border-transparent pb-1 hover:border-[var(--color-main)] transition-all duration-200 cursor-pointer"
+                  style={{ color: "var(--color-main)" }}
+                >
+                  My Orders
+                </span>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center space-x-4 flex-shrink-0">
@@ -111,6 +114,7 @@ export default function Navbar() {
                 <button
                   className="p-2 transition-colors duration-200 hover:opacity-80"
                   style={{ color: "var(--color-main)" }}
+                  aria-label="Notifications"
                 >
                   <svg
                     className="w-7 h-7"
@@ -128,28 +132,22 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  className="p-2 transition-colors duration-200 hover:opacity-80"
-                  style={{ color: "var(--color-main)" }}
+                  onClick={() => router.push("/my-orders")}
+                  className="border-2 rounded-full font-medium text-sm h-[40px] px-4 transition-all duration-200"
+                  style={{
+                    color: "var(--color-main)",
+                    borderColor: "var(--color-main)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--color-main)";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "var(--color-main)";
+                  }}
                 >
-                  <svg
-                    className="w-7 h-7"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect
-                      x="5"
-                      y="4"
-                      width="14"
-                      height="17"
-                      rx="2"
-                      ry="2"
-                      strokeWidth={2}
-                    />
-                    <line x1="8" y1="9" x2="16" y2="9" strokeWidth={2} />
-                    <line x1="8" y1="13" x2="16" y2="13" strokeWidth={2} />
-                    <line x1="8" y1="17" x2="14" y2="17" strokeWidth={2} />
-                  </svg>
+                  My Orders
                 </button>
 
                 <div className="flex items-center space-x-2 flex-shrink-0">
