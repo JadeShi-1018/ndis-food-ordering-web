@@ -33,6 +33,7 @@ export interface CreateOrderResponse {
   message?: string;
 }
 
+
 export async function createOrder(
   payload: CreateOrderRequest
 ): Promise<CreateOrderResponse> {
@@ -48,8 +49,9 @@ export async function createOrder(
 
   try {
     console.log("createOrder payload:", payload);
+    console.log("createOrder url:", `${API_BASE_URL}/Order`);
 
-    const response = await fetch(`${API_BASE_URL}/Order/my-orders`, {
+    const response = await fetch(`${API_BASE_URL}/Order`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,27 +61,33 @@ export async function createOrder(
       signal: controller.signal,
     });
 
-    if (!response.ok) {
-      let errorMessage = "Failed to create order";
+    const responseText = await response.text();
 
-      try {
-        const errorJson = await response.json();
-        errorMessage =
-          errorJson?.message ||
-          errorJson?.title ||
-          errorJson?.error ||
-          errorMessage;
-      } catch {
-        const errorText = await response.text();
-        if (errorText) {
-          errorMessage = errorText;
+    if (!response.ok) {
+      let errorMessage = `Failed to create order (${response.status})`;
+
+      if (responseText) {
+        try {
+          const errorJson = JSON.parse(responseText);
+          errorMessage =
+            errorJson?.message ||
+            errorJson?.title ||
+            errorJson?.error ||
+            responseText ||
+            errorMessage;
+        } catch {
+          errorMessage = responseText;
         }
       }
 
       throw new Error(errorMessage);
     }
 
-    const data = (await response.json()) as CreateOrderResponse;
+    if (!responseText) {
+      throw new Error("Empty response from server.");
+    }
+
+    const data = JSON.parse(responseText) as CreateOrderResponse;
     console.log("createOrder response:", data);
 
     return data;
