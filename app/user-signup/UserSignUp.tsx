@@ -1,15 +1,58 @@
 "use client";
+
 import React, { useState } from "react";
+import { register } from "@/apis/auth";
+import { useRouter } from "next/navigation";
+
+
 
 const UserSignUpPage = () => {
-  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
-  const getButtonStyle = (value: string) =>
-    gender === value
-      ? "bg-[#285770] text-white border border-[#285770]"
-      : "bg-white text-[#285770] border border-gray-300";
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const router = useRouter();
 
-  const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
+  const [form, setForm] = useState({
+    userName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const  handleSignUp = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (form.password !== form.confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+    console.log("Register request:", form);
+
+   try {
+    const data = (await register(form));
+    console.log(data);
+
+    // auto login
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userId", data.userId);
+    localStorage.setItem("email", data.email);
+
+    //redirect
+    router.push("/delivery-service");
+
+  } catch (error: any) {
+    alert(error.message || "Register failed");
+  }
   };
 
   return (
@@ -20,9 +63,9 @@ const UserSignUpPage = () => {
         <div className="text-base">Service System</div>
       </div>
 
-      <div className="text-center text-sm">
-        註冊成為<strong>NDIS</strong>服務系統的成員，您將可以透過我們找到優良的
-        <strong>Provider</strong>，解決您食衣住行的大小事！
+      <div className="text-center text-sm mb-4">
+        Sign up to become a member of the <strong>NDIS</strong> Service System
+        and find trusted <strong>Providers</strong> for your daily support needs.
       </div>
 
       {/* form */}
@@ -30,55 +73,83 @@ const UserSignUpPage = () => {
         onSubmit={handleSignUp}
         className="bg-[#E1F0F2] max-w-[90%] mx-auto rounded-2xl p-5"
       >
-        <h2 className="text-2xl font-bold text-center mb-4">註 冊</h2>
+        <h2 className="text-2xl font-bold text-center mb-4">Sign Up</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
           {/* left */}
           <div className="space-y-4">
-            <Input label="姓名" placeholder="Enter your full name" type="text" />
-            <Input label="密碼" placeholder="Enter your password" type="password" />
-            <Input label="確認密碼" placeholder="Confirm your password" type="password" />
-            <Input label="出生日期" placeholder="DD/MM/YYYY" type="date" />
-            <div className="flex flex-col space-y-2">
-              <label className="font-medium">性 別</label>
-              <div className="flex gap-2">
-                {["Male", "Female", "Other"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() =>
-                      setGender(option as "Male" | "Female" | "Other")
-                    }
-                    className={`px-4 py-1 rounded-md ${getButtonStyle(option)}`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-              <Input label="聯絡電話" placeholder="Enter your phone number" type="tel" />
+            <Input
+              label="User Name"
+              name="userName"
+              placeholder="Enter your user name"
+              type="text"
+              value={form.userName}
+              onChange={handleChange}
+            />
 
+            <Input
+              label="Email"
+              name="email"
+              placeholder="Enter your email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Phone Number"
+              name="phoneNumber"
+              placeholder="Enter your phone number"
+              type="tel"
+              value={form.phoneNumber}
+              onChange={handleChange}
+            />
           </div>
 
           {/* right */}
-          <div className="space-y-9">
-            <Input label="Email" placeholder="Enter your email" />
-            <div className="flex flex-col space-y-4">
-              <label className="font-medium">
-                CRN（由NDIS提供給您的Customer Reference Number）
-              </label>
-              <button
-                type="button"
-                className="bg-[#285770] text-white py-1 px-6 rounded-2xl w-fit"
-              >
-                連結我的CRN
-              </button>
-            </div>
-            <Input label="居住地址" placeholder="Enter your residential address" type="text" />
+          <div className="space-y-4">
+            <label className="font-medium">Password</label>
+            <div className="relative">
+  <input
+    className="border rounded-2xl py-2 px-3 w-full"
+    name="password"
+    type={showPassword ? "text" : "password"}
+    value={form.password}
+    onChange={handleChange}
+    placeholder="Enter your password"
+    required
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-2 text-sm text-gray-500"
+  >
+    {showPassword ? "Hide" : "Show"}
+  </button>
+</div>
 
-            <Input label="緊急聯絡人/關係" placeholder="e.g. Mother / Friend" type="text" />
 
-            <Input label="聯絡人電話" placeholder="Enter emergency contact number" type="tel" />
+  <label className="font-medium">Confirm Password</label>
+<div className="relative">
+  <input
+    className="border rounded-2xl py-2 px-3 w-full"
+    name="confirmPassword"
+    type={showConfirmPassword ? "text" : "password"}
+    value={form.confirmPassword}
+    onChange={handleChange}
+    placeholder="Enter your confirmed password"
+    required
+  />
+  <button
+    type="button"
+    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    className="absolute right-3 top-2 text-sm text-gray-500"
+  >
+    {showConfirmPassword ? "Hide" : "Show"}
+  </button>
+</div>
+
+            
           </div>
         </div>
 
@@ -88,7 +159,7 @@ const UserSignUpPage = () => {
             type="submit"
             className="bg-[#285770] text-white px-10 py-2 rounded-full text-lg"
           >
-            完 成
+            Create Account
           </button>
         </div>
       </form>
@@ -98,22 +169,31 @@ const UserSignUpPage = () => {
 
 const Input = ({
   label,
+  name,
   placeholder,
   type = "text",
+  value,
+  onChange,
 }: {
   label: string;
+  name: string;
   placeholder: string;
   type?: string;
+  value: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) => (
   <div className="flex flex-col space-y-1">
     <label className="font-medium">{label}</label>
     <input
       className="border rounded-2xl py-2 px-3"
+      name={name}
       type={type}
+      value={value}
+      onChange={onChange}
       placeholder={placeholder}
+      required
     />
   </div>
 );
-
 
 export default UserSignUpPage;

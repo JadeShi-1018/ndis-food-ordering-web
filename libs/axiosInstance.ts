@@ -17,6 +17,7 @@ axiosInstance.interceptors.response.use(
       toast.error(`Error ${code}: ${msg}`);
       return Promise.reject(new Error(`Error ${code}: ${msg}`));
     }
+    console.log(body);
     return body;
   },
   (error) => {

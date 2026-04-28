@@ -16,3 +16,19 @@ export interface SignInResponse {
   message: string;
   data: SignInData;
 }
+
+export interface RegisterRequest {
+  userName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  phoneNumber: string;
+}
+
+export interface RegisterResponse {
+  succeed: boolean;
+  errorMessage: string | null;
+  errorCode: string | null;
+  message: string;
+  data:SignInData;
+}
