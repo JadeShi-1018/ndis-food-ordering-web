@@ -390,13 +390,13 @@ export default function ProviderInfo({
                 View Full Menu
               </button>
 
-              <button
+              {/* <button
                 onClick={() => console.log("Contact provider:", active.providerServiceId)}
                 className="px-5 py-2.5 rounded-full font-semibold text-sm text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: "var(--color-main)" }}
               >
                 Contact Provider
-              </button>
+              </button> */}
             </div>
           </section>
         )}
