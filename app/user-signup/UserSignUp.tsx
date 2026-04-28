@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import { register } from "@/apis/auth";
 import { useRouter } from "next/navigation";
-
+import { useAuth } from "../../app/context/AuthContext";
 
 
 const UserSignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 const router = useRouter();
-
+const {  setAuth } = useAuth();
   const [form, setForm] = useState({
     userName: "",
     email: "",
@@ -47,12 +47,18 @@ const router = useRouter();
     localStorage.setItem("userId", data.userId);
     localStorage.setItem("email", data.email);
 
+    // update auth context
+setAuth(data.token, data.email);
+
     //redirect
     router.push("/delivery-service");
 
-  } catch (error: any) {
-    alert(error.message || "Register failed");
-  }
+  } catch (error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Register failed";
+
+  alert(message);
+}
   };
 
   return (
