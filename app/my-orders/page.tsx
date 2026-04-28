@@ -39,6 +39,13 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     const loadOrders = async () => {
+
+        const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/user-login");
+      return;
+    }
       try {
         setLoading(true);
         setError("");
@@ -53,7 +60,7 @@ export default function MyOrdersPage() {
     };
 
     loadOrders();
-  }, []);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-white">

@@ -30,6 +30,8 @@ export async function getMyOrders(): Promise<MyOrderDto[]> {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+    
+
   const response = await fetch(`${API_BASE_URL}/api/Order/my-orders`, {
     method: "GET",
     headers: {
@@ -39,21 +41,23 @@ export async function getMyOrders(): Promise<MyOrderDto[]> {
   });
 
   if (!response.ok) {
-    let errorMessage = "Failed to load orders";
+    const errorText = await response.text();
+  let errorMessage = `Failed to load orders. Status: ${response.status}`;
 
+  if(errorText){
     try {
-      const errorJson = await response.json();
+      const errorJson = JSON.parse(errorText);
       errorMessage =
+        errorJson?.errorMessage ||
         errorJson?.message ||
         errorJson?.title ||
         errorJson?.error ||
         errorMessage;
     } catch {
-      const errorText = await response.text();
-      if (errorText) {
-        errorMessage = errorText;
-      }
+      errorMessage = errorText;
     }
+  }
+    
 
     throw new Error(errorMessage);
   }
