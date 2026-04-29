@@ -16,7 +16,7 @@ const GloberFooter = () => {
         <div className="flex items-center gap-1.5">
           <Mail size={16} />
           <a href="mailto:NDIS0988000000@gmail.com" className="hover:underline">
-            NDIS0988000000@gmail.com
+            support@ndis-demo.com
           </a>
         </div>
 
