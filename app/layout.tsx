@@ -22,6 +22,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NDIS Service Platform",
   description: "NDIS food ordering and service booking platform",
+  icons: {
+    icon: "/favicon-v2.ico",
+  },
 };
 
 export default function RootLayout({
